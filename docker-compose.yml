@@ -7,7 +7,8 @@ services:
       context: .
       dockerfile: Dockerfile
     depends_on:
-      - nestjs_mysql
+      nestjs_mysql:
+        condition: service_healthy
     environment:
       env_file: ".env"
     ports:
@@ -24,6 +25,12 @@ services:
     image: mysql:8.0.39
     container_name: nestjs_app_mysql_container
     restart: unless-stopped
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
+      start_period: 5s
+      interval: 5s
+      timeout: 5s
+      retries: 5
     ports:
       - "3337:3306"
     environment:
@@ -47,7 +54,8 @@ services:
       PMA_USER: root
       PMA_PASSWORD: password
     depends_on:
-      - nestjs_mysql
+      nestjs_mysql:
+        condition: service_healthy
     networks:
       - codewithtee_nestjs_app_network
 
