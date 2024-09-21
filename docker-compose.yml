@@ -27,10 +27,10 @@ services:
     restart: unless-stopped
     healthcheck:
       test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
-      start_period: 5s
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      start_period: 5s # Estimated time to boot.
+      interval: 5s #Interval between health checks.
+      timeout: 5s # Timeout for each health checking.
+      retries: 5 # Hou many times retries.
     ports:
       - "3337:3306"
     environment:
@@ -90,6 +90,7 @@ networks:
 # Step 9: Run Small migration to show database is working nest g resource users --no-spec
 # Step 10: Move Database credentials ot .env and rerun application
 # Step 11: Update Services to use the env file
+# Step 11.1: Update docker compose to make sure mysql is up before app starts
 # Step 10: RECAP
 
 
