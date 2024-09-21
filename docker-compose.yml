@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: dockerized_nestjs_app_container
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - nestjs_mysql
+    environment:
+      env_file: ".env"
+    ports:
+      - "${EXTERNAL_APP_PORT}:${INTERNAL_APP_PORT}"
+    volumes:
+      - .:/app # Mount the project directory to enable hot reload
+      - /app/node_modules # Isolate container-specific dependencies
+    command: "npm run start:dev --port ${INTERNAL_APP_PORT}"
+    networks:
+      - codewithtee_nestjs_app_network
+
+  nestjs_mysql:
+    platform: linux/amd64
+    image: mysql:8.0.39
+    container_name: nestjs_app_mysql_container
+    restart: unless-stopped
+    ports:
+      - "3337:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: nestjs_app
+      MYSQL_USER: codewithtee
+      MYSQL_PASSWORD: password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - codewithtee_nestjs_app_network
+  nestjs_phpmyadmin:
+    image: phpmyadmin:5.2.1-apache
+    container_name: nestjs_phpmyadmin_container
+    restart: unless-stopped
+    ports:
+      - "8383:80"
+    environment:
+      PMA_HOST: nestjs_mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: password
+    depends_on:
+      - nestjs_mysql
+    networks:
+      - codewithtee_nestjs_app_network
+
+volumes:
+  mysql_data:
+    driver: local
+networks:
+  codewithtee_nestjs_app_network:
+    driver: bridge
+
+# https://docs.docker.com/compose/environment-variables/set-environment-variables/
+
+# https://docs.nestjs.com/techniques/database
+# install config package
+# install nest js type orm npm install --save @nestjs/typeorm typeorm mysql2
+#
+
+
+# Step 1: Initialize nest js app
+# Step 2: Create dockerfile, docker-compose file and crate .env file
+# Step 3: Update Docker file
+# Step 4: Update docker compose file
+# Step 4.1: explain internal and external port
+# Step 5: install node modules and run app inside docker compose file
+# Step 5: install typeorm for mysql for nest js # npm install --save @nestjs/typeorm typeorm mysql2
+# Step 5: install env package for nest js # npm i --save @nestjs/config
+# Step 6: Show how to use external database with dockerized application
+# Step 6: Test connected database
+# Step 7: update docker compose file with  mysql and phpmyadmin from docker hub
+# Step 7.1: Explain mysql data and docker network
+# Step 8: Test  mysql and phpmyadmin
+# Step 9: Run Small migration to show database is working nest g resource users --no-spec
+# Step 10: Move Database credentials ot .env and rerun application
+# Step 11: Update Services to use the env file
+# Step 10: RECAP
+
+
+# Request (1) ===> Accept Submitters(Users(M)) -> Approvals (Users)(has levels) (Rank them)
+
+
+# Requests contains Category and the amount ()
+
+# Users Table (id, name) => "1,Adam", "2,John", "3,Kane"
+# Roles table (id, name) -> "1,Admin","2,Teacher", "3,Software Engineer", "4,Finance"
+# Permissions table (id, name) "1,can_submit_expense_request"
+# Role_Permissions table (role_id, permission_id) (2, 1)
+# User_permissions table (user_id, permission_id) ([1,1], [2,1], [3,1])
+# Categories Table (id, name) => "1, transport_fare"
+# Expense Request (1, Name, description, category, cost, status) (1, "Transport Fare", "", "transport_fare", 'pending')
+
+# Criteria Table (id, expense_request_id, logic, field, ) {“logic” => if, category -> 1, operator => <, value => 4000}
+
+
